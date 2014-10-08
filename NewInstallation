@@ -1,0 +1,17 @@
+Before star installing anything, install these
+
+sudo apt-get install autoconf
+sudo apt-get install libudev-dev
+
+And then install the dependencies
+./depend/install_deps
+
+Install opencl library of nvidia
+sudo apt-get install nvidia-opencl-dev
+sudo apt-get install nvidia-opencl-icd-331
+sudo apt-get install nvidia-current
+
+There is a bug with the version 1.2 of OpenCl, therefore we have to use the headers of the version 1.1 (https://www.khronos.org/registry/cl/) and change the headers manually to /usr/include/CL 
+
+
+
