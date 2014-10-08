@@ -1,0 +1,115 @@
+Download libfreenect2 that works with OpenCL
+https://github.com/wiedemeyer/libfreenect2
+
+Note this package is under construction and we need to do some changes afterwards
+
+run the application to install the dependencies
+/dependencies/install_deps.sh
+
+Install OpenCL: first I tried to install it and I got some problems I tried to install it once again following other web pages. 
+
+Now I could propose:
+
+first try this link
+https://software.intel.com/en-us/forums/topic/390630
+
+In Ubuntu 14.04 we have to relink the libraries
+
+sudo rm /usr/lib/libOpenCL.so
+sudo ln -s /opt/intel/opencl-1.2-4.6.0.92/lib64/libOpenCL.so.1/usr/lib/libOpenCL.so.1
+sudo ln -s /usr/lib/libOpenCL.so.1/usr/lib/libOpenCL.so
+
+If it doesn't work try to use this link:
+http://wiki.tiker.net/OpenCLHowTo#headers
+
+In the last link there is a program to verify the correct intallation
+
+To veify the installation I had some problems trying to make the files, I solved it using:
+make OPENCL_INC=/somewhere/include OPENCL_LIB=/somewhere/lib
+
+It means, I indicated manually where the library and the headers are.
+
+Set variables in bash:
+export LIBRARY_PATH="/usr/lib/i386-linux-gnu/:/usr/lib/x86_64-linux-gnu/"
+export LD_LIBRARY_PATH="/usr/lib/i386-linux-gnu/:/usr/lib/x86_64-linux-gnu/"
+
+Use the library provided by the package, then it is pached with superspeed
+install libusb
+
+sudo apt-get install libusb-dev
+
+********************** This is a big error - Don't do it never **********************
+move the folder "libusb" from /depends/libusb_src to /depends/
+Change the directory of the library "libusb.h" to "libusb-1.0/libusb.h" en:
+/include/libfreenect2/protocol/include/usb/event_loop.h
+/include/transfer_pool.h/src/event_loop.cpp
+/include/libfreenect2/protocol/command_transaction.h
+/src/libfreenect2.cpp
+***************************************************************************
+
+*********** Don't do this, it is better to link the libraries ***************
+Copiar las librerias cl.hpp y cl.h en el paquete
+***************************************************************************
+
+Look what package I should install for opencl
+****** this package works just for nvidia cards ****************************
+install nvidia-opencl-dev
+***************************************************************************
+
+install the library "libturbojpeg"
+
+Fix bug with libturbojpeg.a
+https://github.com/OpenKinect/libfreenect2/issues/36
+sudo ln -s /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0.0.0 /usr/lib/x86_64-linux-gnu/libturbojpeg.so
+
+I changed the headers of OpenCL(v1.2) which are in the folder /usr/include/CL for the headers of the v1.1 beacuse there is a bug with OpenCL. I think it is better to install the version 1.1 directly
+https://www.khronos.org/registry/cl/
+
+------------------------------------------------------------------------
+Change ownership of /usr
+cd /usr
+sudo chown -R user local
+------------------------------------------------------------------------
+
+***************************************************************************
+indicate where the libraries are
+export LD_LIBRARY_PATH="/usr/local/lib/:/usr/local/lib64/"
+export LIBRARY_PATH="/usr/local/lib/:/usr/local/lib64/"
+***************************************************************************
+
+------------------------------------------------------------------------
+install JRE and JDK
+sudo apt-get install default-jre
+sudo apt-get install default-jdk
+------------------------------------------------------------------------
+
+Each time you try to open the usb ports you have to use sudo
+sudo ./Protonect
+
+or
+
+permissions for usbports
+cd /dev/bus/usb
+sudo chown -R user 001 002 003
+
+write the rules to get rid of the permissions to use the usb-ports. The file has to be in /etc/udev/rules.d
+# ATTR{product}=="Kinect2"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02c4", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d8", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d9", MODE="0666"
+
+Links:
+
+How to install libfreenect2
+https://github.com/wiedemeyer/libfreenect2
+
+****** If the PC does not have a GPU, we have to hack the code of the libfreenect2, go to:
+/libfreenect2/src/opencl_depth_packet_processor.cpp
+
+and change line 246
+context = cl::Context(CL_DEVICE_TYPE_GPU, properties);
+by:
+context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
+
+make the same change in line 278 in file kinect2_bridge.cpp
+

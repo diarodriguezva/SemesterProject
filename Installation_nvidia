@@ -1,0 +1,60 @@
+-------------------------------------------------------------------------------------
+Setup using a Nvidia GPU
+-------------------------------------------------------------------------------------
+
+Download libfreenect2 (Driver for the kinect2) that works with OpenCL
+https://github.com/wiedemeyer/libfreenect2
+
+Download the package for the bridge and other utilities. This is a ros package, therefore put it in your workspace
+https://github.com/code-iai/iai_kinect2.git
+-------------------------------------------------------------------------------------
+
+Before starting to install anything, we have to install these:
+
+sudo apt-get install autoconf
+sudo apt-get install libudev-dev
+
+Install the library turbojpeg
+sudo apt-get install libturbojpeg
+
+Fix the bug in the turbojpeg library (https://github.com/OpenKinect/libfreenect2/issues/36). 
+sudo ln -s /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0.0.0 /usr/lib/x86_64-linux-gnu/libturbojpeg.so
+-------------------------------------------------------------------------------------
+
+Installation of OpenCL
+
+Install opencl library of nvidia
+sudo apt-get install nvidia-opencl-dev
+sudo apt-get install nvidia-opencl-icd-331
+sudo apt-get install nvidia-current
+
+After the installation of the nvidia libraries restart the PC
+
+There is a bug with the version 1.2 of OpenCl, therefore we have to use the headers of the version 1.1 (https://www.khronos.org/registry/cl/) and change the headers manually in /usr/include/CL
+-------------------------------------------------------------------------------------
+
+Installation of libfreenect2 (Driver for the kinect2)
+
+install the dependencies
+sudo sh ./depend/install_deps
+
+Be sure that the folder libusb is created
+
+Make the rules in order to access to the usb ports without permissions
+sudo gedit /etc/udev/rules.d/90-kinect2.rules
+
+# ATTR{product}=="Kinect2"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02c4", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d8", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d9", MODE="0666"
+
+cd ./examples/protonect/
+cmake CMakeLists.txt
+sudo make && make install
+
+Verify the compilation:
+./bin/Protonect
+-------------------------------------------------------------------------------------
+
+Use of the Bridge
+Built the package using catkin_make being in the catkin_ws 

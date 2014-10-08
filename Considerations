@@ -1,0 +1,51 @@
+1. Install and run the package libfreenect that uses libOpenCL because we need the ROS bridge
+
+2. Install OpenCL:
+According to the GPU or integrated graphic card we need to install the libraries for OpenCL:
+
+   - if the GPU is from nvidia run:
+	sudo apt-get install nvidia-opencl-dev
+	sudo apt-get install nvidia-opencl-icd-331
+	sudo apt-get install nvidia-current
+
+   - if the PC has an intel graphic card integrated in the CPU, download the libraries from:
+	https://software.intel.com/en-us/intel-opencl
+
+	Extract the files
+	$ tar zxvf intel_sdk_ ...
+	
+	Convert the rpm package to debian package
+	$ fakeroot alien --to-deb opencl-1.2-intel-cpu- ...
+
+	Install the package
+	$ sudo dpkg -i opencl
+	
+	After the installation be sure that the libraries are in:
+	/usr/lib/x86_64-linux-gnu/
+	If not, you should link the library using 
+	$ sudo ln -s /where_the_library_is/libOpenCL.so	/usr/lib/x86_64-linux-gnu/libOpenCL.so
+
+3. Keep in mind that we have to use the files "cl.h" and "cl.hpp" from the version 1.1 of OpenCL, because there is a bug with the version 1.2
+
+This is the web page of the headers:
+https://www.khronos.org/registry/cl/
+
+The headers have to be replaced in
+/usr/include/CL 
+
+4. If we are using the intel_CPU for the graphics, we have to hack the "libfreenect2":
+cd /libfreenect2/src/opencl_depth_packet_processor.cpp
+
+and change line 246
+context = cl::Context(CL_DEVICE_TYPE_GPU, properties);
+by:
+context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
+
+make the same in 
+cd ~/catkin_ws/src/iai_kinect2-master/kinect2_bridge/src/kinect2_bridge.cpp
+change in line 278
+
+
+
+
+
