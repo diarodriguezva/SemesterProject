@@ -1,6 +1,33 @@
-1. Install and run the package libfreenect that uses libOpenCL because we need the ROS bridge
+-------------------------------------------------------------------------------------
+Goal:
+To be able to use kinect2 in Ubuntu14.04 using ROS
+-------------------------------------------------------------------------------------
 
-2. Install OpenCL:
+Proposed way to do it:
+Install and run the package libfreenect2 that uses libOpenCL because we need after the ROS bridge (provided by Bremen University)
+
+Download libfreenect2 (Driver for the kinect2) that works with OpenCL
+https://github.com/wiedemeyer/libfreenect2
+
+Download the package for the bridge and other utilities. This is a ros package, therefore put it in your catkin workspace
+https://github.com/code-iai/iai_kinect2.git
+-------------------------------------------------------------------------------------
+
+Installation
+
+*** Dependencies ***
+
+sudo apt-get install autoconf
+sudo apt-get install libudev-dev
+
+Install the library turbojpeg
+sudo apt-get install libturbojpeg
+
+Fix the bug in the turbojpeg library (https://github.com/OpenKinect/libfreenect2/issues/36). 
+sudo ln -s /usr/lib/x86_64-linux-gnu/libturbojpeg.so.0.0.0 /usr/lib/x86_64-linux-gnu/libturbojpeg.so
+
+*** OpenCL ***
+
 According to the GPU or integrated graphic card we need to install the libraries for OpenCL:
 
    - if the GPU is from nvidia run:
@@ -25,7 +52,10 @@ According to the GPU or integrated graphic card we need to install the libraries
 	If not, you should link the library using 
 	$ sudo ln -s /where_the_library_is/libOpenCL.so	/usr/lib/x86_64-linux-gnu/libOpenCL.so
 
-3. Keep in mind that we have to use the files "cl.h" and "cl.hpp" from the version 1.1 of OpenCL, because there is a bug with the version 1.2
+After the installation of the OpenCL libraries restart the PC
+
+*** Fix bug of OpenCL ***
+Keep in mind that we have to use the files "cl.h" and "cl.hpp" from the version 1.1 of OpenCL, because there is a bug with the version 1.2
 
 This is the web page of the headers:
 https://www.khronos.org/registry/cl/
@@ -33,7 +63,35 @@ https://www.khronos.org/registry/cl/
 The headers have to be replaced in
 /usr/include/CL 
 
-4. If we are using the intel_CPU for the graphics, we have to hack the "libfreenect2":
+-------------------------------------------------------------------------------------
+
+Installation of libfreenect2 (Driver for the kinect2)
+
+install the dependencies
+sudo sh ./depend/install_deps
+
+Be sure that the folder libusb is created
+
+Make the rules in order to access to the usb ports without permissions
+sudo gedit /etc/udev/rules.d/90-kinect2.rules
+
+# ATTR{product}=="Kinect2"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02c4", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d8", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="045e", ATTR{idProduct}=="02d9", MODE="0666"
+
+cd ./examples/protonect/
+cmake CMakeLists.txt
+sudo make && make install
+
+Verify the compilation:
+./bin/Protonect
+-------------------------------------------------------------------------------------
+
+Use of the kinect2_bridge ROS Package
+
+*****
+If we are using the intel_CPU for the graphics, we have to hack the "libfreenect2":
 cd /libfreenect2/src/opencl_depth_packet_processor.cpp
 
 and change line 246
@@ -41,9 +99,19 @@ context = cl::Context(CL_DEVICE_TYPE_GPU, properties);
 by:
 context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 
-make the same in 
+make the same in line 278 in file:
 cd ~/catkin_ws/src/iai_kinect2-master/kinect2_bridge/src/kinect2_bridge.cpp
-change in line 278
+*****
+
+Built the package using catkin_make being in the catkin_ws
+
+rosrun kinect2_bridge kinect2_bridge
+
+Afterwards you can see the ROS topics
+
+
+---------------
+Build the library libfreenect2 as realese version
 
 
 
